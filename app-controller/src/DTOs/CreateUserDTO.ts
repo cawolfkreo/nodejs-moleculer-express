@@ -10,3 +10,13 @@ export interface CreateUserDTO {
     birthDate: Date,
     password: string,
 }
+
+/**
+ * this is the DTO template used when
+ * sending the information to the 
+ * microservice.
+ */
+export interface CreateServiceDTO extends CreateUserDTO{
+    user_id: string,
+    created: Date
+}
