@@ -5,11 +5,16 @@
 * del archivo .env
 */
 require("dotenv").config();
-const userBroker = require("./services/user.service");
 const express = require("express");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 
+/**
+ * Se importan los clientes de los
+ * microservicios del proyecto
+ */
+const userBroker = require("./services/user.service");
+const transacBroker = require("./services/transaction.service");
 /**
 * El número de iteraciones para la generación
 * de la sal que bycript utilizará
@@ -34,26 +39,6 @@ const app = express();
 * recibidos en las peticiones.
 */
 app.use(express.json());
-
-/**
-* El get de ...
-*/
-app.get("/", (req, res) =>{
-	res.send("Hola!!");
-});
-
-/**
-* El post de ...
-*/
-app.post("/brew", (req, res) =>{
-	const { brew } = req.body;
-	
-	if ( brew === "tea" ){		
-		res.send("Ok! I'll brew that!");
-	} else {		
-		res.status(418).send("I am a teapot");
-	}
-});
 
 /**
 * El handler para manjear el POST de creación
@@ -99,7 +84,7 @@ app.post("/login", async (req, res) => {
 	const credentials = req.body;
 
 	// Se revisa que las credenciales si fueron enviadas
-	if(!credentials || !credentials.email || !!credentials.password) {
+	if(!credentials || !credentials.email || !credentials.password) {
 		res.status(400).send({ message: "Parámetros insuficientes!"});
 	}
 	else {
@@ -107,23 +92,82 @@ app.post("/login", async (req, res) => {
 		let message = "";
 		let status = 200;
 		try {
-			const hashedPswd = await userBroker.call("usuario.getPass", user_id );
+			const user = await userBroker.call("usuario.getPass", user_id );
 
 			// Se valida la contraseña con bcrypt.
-			const isValid = await bcrypt.compare(credentials.password, hashedPswd);
+			const isValid = await bcrypt.compare(credentials.password, user.password);
 			
 			if (isValid){
-				message = "Inicio de sesión exitosa!";
-			} else {
+				message = { mensaje: "inicio de sesión exitoso!", user_id: user.user_id };
+			} 
+			else {
 				status = 401;
 				message = "Credenciales no válidas";
 			}
-			
+
 		} catch (error) {
 			status = 401;
 			message = "El usuario no existe";
 			console.error(error);
 		}
+		res.status(status).send(message);
+	}
+});
+
+/**
+ * El handler para manejar el POST para
+ * agregar una transacción en el sistema.
+ * El endpoint debe ser llamado los parámetros
+ * válidos.
+ */
+app.post("/transaction", async (req, res) => {
+	const newTransact = req.body;
+
+	if(validateNewTransaction(newTransact)) {
+		res.status(400).send("Parámetros insuficientes");
+	}
+	else {
+		// La fecha actual es la fecha de creación de la transacción.
+		newTransact.created_date = new Date();
+
+		// El estado de una transacción nueva siempre es 1.
+		newTransact.status = 1;
+		try {
+			const resultado = await transacBroker.call("transaccion.add", newTransact);
+			res.send(resultado);
+		} catch (error) {
+			res.status(400).send("Invalid user_id");
+			console.error(error);
+			console.error(error.message);
+		}
+	}
+});
+
+/**
+ * El handler para manejar el GET para
+ * obtener la lista de transacciones de
+ * un usuario. El endpoint debe ser 
+ * llamado con el user_id de un usuario válido.
+ */
+app.get("/transactions", async (req, res) => {
+	const { user_id } = req.body;
+	if(!user_id){
+		res.status(400).send("Parámetros insuficientes");
+	}
+	else {
+		let message = {};
+		let status = 200;
+
+		try {
+			// Pide la lista de transacciones del usuario
+			const transactions = await transacBroker.call("transaccion.list", user_id);
+			message = transactions;
+		} catch (error) {
+			message = "user_id inválido";
+			status = 400;
+			console.log(error.message);
+		}
+		//retorna el código y mensaje seleccionado.
 		res.status(status).send(message);
 	}
 });
@@ -157,4 +201,14 @@ function validateNewUser(usuario) {
 	return (!usuario || !usuario.email || 
 		!usuario.password || !usuario.name || 
 		!usuario.lastname || !usuario.birth_date);
+}
+
+/**
+ * Valida la información de la nueva
+ * transacción a agregar en el sistema.
+ * @param {*} transaction La nueva transacción a validar
+ */
+function validateNewTransaction(transaction) {
+	return (!transaction || !transaction.value ||
+		!transaction.points ||!transaction.user_id);
 }

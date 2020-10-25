@@ -55,7 +55,9 @@ broker.createService({
 });
 
 /**
- * 
+ * Se crea el microservicio para manipular los
+ * datos del usuario y para manipular el wrapper
+ * de la base de datos.
  */
 broker.createService({
 	name: "usuario",
@@ -63,7 +65,7 @@ broker.createService({
 		/**
 		 * Agregua a un usuario a la DB si este no existe.
 		 * En caso de existir no lo agrega y lanza un error.
-		 * @param {Moleculer.Context} ctx El contexto del que se llama el selvicio
+		 * @param {Moleculer.Context} ctx El contexto del que se llama el servicio
 		 */
 		async add(ctx) {
 			try {
@@ -73,13 +75,19 @@ broker.createService({
 				return Promise.reject("El usuario ya existe!");
 			}
 		},
+		/**
+		 * Obtiene la contraseña hasheada y el id del usuario
+		 * de la base de datos. En caso de que el usuario no
+		 * exista se retorna un mensaje de error.
+		 * @param {Moleculer.Context} ctx El contexto del que se llama el servicio
+		 */
 		async getPass(ctx) {
 			const user_id = ctx.params;
 			try {
 				const user = await ctx.call("user.get", {
 					id: user_id
 				});
-				return user.password;
+				return { password: user.password, user_id: user.user_id };
 			} catch (error) {
 				return Promise.reject(error.message);
 			}
