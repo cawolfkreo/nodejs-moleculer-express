@@ -4,11 +4,11 @@
 * Carga las credenciales de una DB a process.env
 */
 require("dotenv").config();
-const { promises } = require("fs");
 const { ServiceBroker } = require("moleculer");
 const DbService = require("moleculer-db");
 const sqlAdapter = require("moleculer-db-adapter-sequelize");
 const sequelize = require("sequelize");
+const Exceljs = require("exceljs");
 
 /**
 * Las credenciales para conectar con la DB se
@@ -89,18 +89,87 @@ broker.createService({
 		 */
 		async list(ctx) {
 			try {
-				const transactions = await ctx.call("transaction.find", { 
-					sort: "-created_date" 
-				},
-				{
-					where:{
-						user_id: ctx.params
-					}
+				const transactions = await ctx.call("transaction.find", {
+					sort: "-created_date",
+					query: { user_id: ctx.params }
 				});
 
 				return transactions;
 			} catch (error) {
-				return promises.reject(error);
+				return Promise.reject(error);
+			}
+		},
+		/**
+		 * Obtiene los puntos activos del usuario y calcula
+		 * el total de puntos que ese posee.
+		 * @param {Moleculer.Context} ctx El contexto del que se llama el servicio
+		 */
+		async totalPoints(ctx) {
+			try {
+				const points = await ctx.call("transaction.find", {
+					fields: [ "points" ],
+					query: {
+						user_id: ctx.params,
+						status: 1
+					}
+				});
+
+				return points.reduce((sum, item) => sum + item.points, 0);
+			} catch (error) {
+				console.log(error);
+				console.log(error.message);
+				return Promise.reject(error);
+			}
+		},
+		/**
+		 * inactiva una transacción del sistema, cambiando
+		 * su valor de la columna "status" a 0. Retorna
+		 * un error si el transaction_id no existe o es
+		 * inválido en el sistema.
+		 * @param {*} ctx 
+		 */
+		async inactivarTrans(ctx) {
+			try {
+				const updt = await ctx.call("transaction.update", {
+					id: ctx.params,
+					status: 0
+				});
+				return updt;
+			} catch (error) {
+				return Promise.reject(error);
+			}
+		},
+		/**
+		 * 
+		 * @param {*} ctx 
+		 */
+		async crearExcel(ctx) {
+			try {
+				const transactions = await ctx.call("transaction.find", {
+					query: { user_id: ctx.params }
+				});
+				const workbook = new Exceljs.Workbook();
+				const sheet = workbook.addWorksheet("transactions");
+				sheet.columns = [
+					{ header: "transaction Id", key: "id" },
+					{ header: "Created at", key: "created" },
+					{ header: "Value", key: "value" },
+					{ header: "Points", key: "points" },
+					{ header: "Status", key: "status"}
+				];
+
+				transactions.map((transaction, index) => {
+					const row = sheet.getRow (++index);
+					row.getCell(1).value = transaction.transaction_id;
+					row.getCell(2).value = transaction.created_date;
+					row.getCell(3).value = transaction.value;
+					row.getCell(4).value = transaction.points;
+					row.getCell(5).value = transaction.status === 1 ? "Active" : "Inactive";
+				});
+
+				return workbook.xlsx;
+			} catch (error) {
+				return Promise.reject(error);
 			}
 		}
 	}

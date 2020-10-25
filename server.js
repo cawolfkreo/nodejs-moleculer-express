@@ -160,8 +160,7 @@ app.get("/transactions", async (req, res) => {
 
 		try {
 			// Pide la lista de transacciones del usuario
-			const transactions = await transacBroker.call("transaccion.list", user_id);
-			message = transactions;
+			message = await transacBroker.call("transaccion.list", user_id);
 		} catch (error) {
 			message = "user_id inválido";
 			status = 400;
@@ -169,6 +168,75 @@ app.get("/transactions", async (req, res) => {
 		}
 		//retorna el código y mensaje seleccionado.
 		res.status(status).send(message);
+	}
+});
+
+/**
+ * El handler encargado de manejar el
+ * GET para obtener el total de puntos
+ * activos de un usuario. El endpoint debe ser 
+ * llamado con el user_id de un usuario válido.
+ */
+app.get("/points", async (req, res) => {
+	const { user_id } = req.body;
+	if(!user_id){
+		res.status(400).send("Parámetros insuficientes");
+	}
+	else {
+		let mensaje = {};
+		let status = 200;
+		try {
+			mensaje = await transacBroker.call("transaccion.totalPoints", user_id);
+		} catch (error) {
+			mensaje = "user_id inválido";
+			status = 400;
+			console.log(error.message);
+		}
+
+		//retorna el código y mensaje seleccionado.
+		res.status(status).send({ puntos_totales: mensaje });
+	}
+});
+
+app.put("/inactivate_transaction", async (req, res) => {
+	if(!req.body || !req.body.transaction_id){
+		res.status(400).send("Parámetros insuficientes");
+	}
+	else {
+		const { transaction_id } = req.body;
+		let mensaje = {};
+		let status = 200;
+		try {
+			mensaje = await transacBroker.call("transaccion.inactivarTrans", transaction_id);
+		} catch (error) {
+			status = 400;
+			mensaje = "transaction_id inválido";
+			console.log(error);
+			console.log(error.message);
+		}
+
+		//retorna el código y mensaje seleccionado.
+		res.status(status).send({ puntos_totales: mensaje });
+	}
+});
+
+app.get("/transactions-to-excel", async (req, res) => {
+	if(!req.body || !req.body.user_id){
+		res.status(400).send("Parámetros insuficientes");
+	}
+	else {
+		const { user_id } = req.body;
+		try {
+			const xlsx = await transacBroker.call("transaccion.crearExcel", user_id);
+			res.setHeader("Content-Type", "application/vnd.openxmlformats");
+			res.setHeader("Content-Disposition", "attachment; filename=Report.xlsx");
+			await xlsx.write(res);
+			res.status(200).end();
+		} catch (error) {
+			res.status(400).send("user_id inválido");
+			console.log(error);
+			console.log(error.message);
+		}
 	}
 });
 
@@ -182,7 +250,7 @@ Promise.all([userBroker.start(), transacBroker.start()]).then(() =>{
 	 */
 	app.listen(port, () => {
 		const currentDate = new Date();
-		const localDate = currentDate.toLocaleString().slice(0,19);
+		const localDate = currentDate.toLocaleString().slice(0,19).trim();
 		console.log(`[${localDate}] Express JS corriendo en el puerto ${port}`);
 	});
 });
