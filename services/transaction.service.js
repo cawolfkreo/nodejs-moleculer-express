@@ -197,21 +197,29 @@ broker.createService({
 				});
 				const workbook = new Exceljs.Workbook();
 				const sheet = workbook.addWorksheet("transactions");
-				sheet.columns = [
-					{ header: "transaction Id", key: "id" },
-					{ header: "Created at", key: "created" },
-					{ header: "Value", key: "value" },
-					{ header: "Points", key: "points" },
-					{ header: "Status", key: "status"}
+				//Las filas y columnas en excel inician en 1
+				const dataStart = 1;
+				//Las cabeceras van antes que los datos
+				const headerRow = sheet.getRow(dataStart);
+				headerRow.values = [
+					"Index",
+					"Transaction Id", 
+					"Created at", 
+					"Value", 
+					"Points", 
+					"Status"
 				];
 
 				transactions.map((transaction, index) => {
-					const row = sheet.getRow (++index);
-					row.getCell(1).value = transaction.transaction_id;
-					row.getCell(2).value = transaction.created_date;
-					row.getCell(3).value = transaction.value;
-					row.getCell(4).value = transaction.points;
-					row.getCell(5).value = transaction.status === 1 ? "Active" : "Inactive";
+					//Como las cabeceras van antes de los datos
+					//Se suma ese espacio extra para que aparezcan en esa fila
+					const row = sheet.getRow (++index + dataStart);
+					row.getCell(1).value = index;
+					row.getCell(2).value = transaction.transaction_id;
+					row.getCell(3).value = transaction.created_date;
+					row.getCell(4).value = transaction.value;
+					row.getCell(5).value = transaction.points;
+					row.getCell(6).value = transaction.status === 1 ? "Active" : "Inactive";
 				});
 
 				return workbook.xlsx;
