@@ -80,7 +80,19 @@ broker.createService({
 			} catch (error) {
 				return Promise.reject(error);
 			}
-		},
+		}
+	}
+});
+
+/**
+ * Crea el servicio de listado de todas
+ * las transacciones de un usuario,
+ * el cual obtiene la información
+ * del wrapper de la DB
+ */
+broker.createService({
+	name: "transactions",
+	actions: {
 		/**
 		 * Lista todas las transacciones de un usuario en 
 		 * orden descendente. Arroja un error si el user_id
@@ -98,13 +110,24 @@ broker.createService({
 			} catch (error) {
 				return Promise.reject(error);
 			}
-		},
+		}
+	}
+});
+
+/**
+ * Crea el servicio encargado de calcular los puntos
+ * totales de un usuario mediante el
+ * wrapper de la db.
+ */
+broker.createService({
+	name: "points",
+	actions: {
 		/**
 		 * Obtiene los puntos activos del usuario y calcula
 		 * el total de puntos que ese posee.
 		 * @param {Moleculer.Context} ctx El contexto del que se llama el servicio
 		 */
-		async totalPoints(ctx) {
+		async total(ctx) {
 			try {
 				const points = await ctx.call("transaction.find", {
 					fields: [ "points" ],
@@ -120,15 +143,26 @@ broker.createService({
 				console.log(error.message);
 				return Promise.reject(error);
 			}
-		},
+		}
+	}
+});
+
+/**
+ * Crea el servicio encargado de 
+ * deshabilitar una transacción
+ * mediante el wrapper de la DB
+ */
+broker.createService({
+	name: "disable",
+	actions: {
 		/**
 		 * inactiva una transacción del sistema, cambiando
 		 * su valor de la columna "status" a 0. Retorna
 		 * un error si el transaction_id no existe o es
 		 * inválido en el sistema.
-		 * @param {*} ctx 
+		 * @param {Moleculer.Context} ctx El contexto del que se llama el servicio
 		 */
-		async inactivarTrans(ctx) {
+		async transaction(ctx) {
 			try {
 				const updt = await ctx.call("transaction.update", {
 					id: ctx.params,
@@ -138,12 +172,25 @@ broker.createService({
 			} catch (error) {
 				return Promise.reject(error);
 			}
-		},
+		}
+	}
+});
+
+/**
+ * Crea el servicio encargado de manipular
+ * y crear el reporte de Excel de todas
+ * las transacciones que posee un usuario
+ */
+broker.createService({
+	name: "excel",
+	actions: {
 		/**
-		 * 
-		 * @param {*} ctx 
+		 * Obtiene la lista de transacciones del
+		 * usuario y crea un libro de excel reportando
+		 * todas las transacciones que este tiene
+		 * @param {Moleculer.Context} ctx El contexto del que se llama el servicio
 		 */
-		async crearExcel(ctx) {
+		async report(ctx) {
 			try {
 				const transactions = await ctx.call("transaction.find", {
 					query: { user_id: ctx.params }

@@ -55,12 +55,12 @@ broker.createService({
 });
 
 /**
- * Se crean los microservicios para manipular los
- * datos del usuario y para manipular el wrapper
- * respectivo de la base de datos.
+ * Se crea el Microservicio encargado
+ * de manipular el wrapper de la db
+ * al momento de iniciar sesión.
  */
 broker.createService({
-	name: "usuario",
+	name: "registrar",
 	actions:{
 		/**
 		 * Agregua a un usuario a la DB si este no existe.
@@ -74,14 +74,25 @@ broker.createService({
 			} catch (error) {
 				return Promise.reject("El usuario ya existe!");
 			}
-		},
+		}
+	}
+});
+
+/**
+ * Se crea el Microservicio encargado 
+ * de manipular el wrapper de la db
+ * para el inicio de sesión del usuario
+ */
+broker.createService({
+	name: "login",
+	actions:{
 		/**
 		 * Obtiene la contraseña hasheada y el id del usuario
 		 * de la base de datos. En caso de que el usuario no
 		 * exista se retorna un mensaje de error.
 		 * @param {Moleculer.Context} ctx El contexto del que se llama el servicio
 		 */
-		async getPass(ctx) {
+		async login(ctx) {
 			const user_id = ctx.params;
 			try {
 				const user = await ctx.call("user.get", {

@@ -46,7 +46,7 @@ app.use(express.json());
 * llamar a este endpoint del API con los
 * parámetros correctos.
 */
-app.post("/user", async (req, res) =>{
+app.post("/register", async (req, res) =>{
 	const user = req.body;
 	// Se validan que  estén los parámetros del nuevo usuario
 	if(validateNewUser(user)) {
@@ -63,7 +63,7 @@ app.post("/user", async (req, res) =>{
 		user.created_date = new Date();
 		
 		try {
-			const respuesta = await userBroker.call("usuario.add", user );
+			const respuesta = await userBroker.call("registrar.add", user );
 			
 			res.send({ message: respuesta });
 		} 
@@ -92,7 +92,7 @@ app.post("/login", async (req, res) => {
 		let message = "";
 		let status = 200;
 		try {
-			const user = await userBroker.call("usuario.getPass", user_id );
+			const user = await userBroker.call("login.login", user_id );
 
 			// Se valida la contraseña con bcrypt.
 			const isValid = await bcrypt.compare(credentials.password, user.password);
@@ -160,7 +160,7 @@ app.get("/transactions", async (req, res) => {
 
 		try {
 			// Pide la lista de transacciones del usuario
-			message = await transacBroker.call("transaccion.list", user_id);
+			message = await transacBroker.call("transactions.list", user_id);
 		} catch (error) {
 			message = "user_id inválido";
 			status = 400;
@@ -186,7 +186,7 @@ app.get("/points", async (req, res) => {
 		let mensaje = {};
 		let status = 200;
 		try {
-			mensaje = await transacBroker.call("transaccion.totalPoints", user_id);
+			mensaje = await transacBroker.call("points.total", user_id);
 		} catch (error) {
 			mensaje = "user_id inválido";
 			status = 400;
@@ -207,7 +207,7 @@ app.put("/inactivate_transaction", async (req, res) => {
 		let mensaje = {};
 		let status = 200;
 		try {
-			mensaje = await transacBroker.call("transaccion.inactivarTrans", transaction_id);
+			mensaje = await transacBroker.call("disable.transaction", transaction_id);
 		} catch (error) {
 			status = 400;
 			mensaje = "transaction_id inválido";
@@ -227,7 +227,7 @@ app.get("/transactions-to-excel", async (req, res) => {
 	else {
 		const { user_id } = req.body;
 		try {
-			const xlsx = await transacBroker.call("transaccion.crearExcel", user_id);
+			const xlsx = await transacBroker.call("excel.report", user_id);
 			res.setHeader("Content-Type", "application/vnd.openxmlformats");
 			res.setHeader("Content-Disposition", "attachment; filename=Report.xlsx");
 			await xlsx.write(res);
