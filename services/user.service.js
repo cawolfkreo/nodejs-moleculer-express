@@ -72,6 +72,17 @@ broker.createService({
 			} catch (error) {
 				return Promise.reject("El usuario ya existe!");
 			}
+		},
+		async getPass(ctx) {
+			const user_id = ctx.params;
+			try {
+				const user = await ctx.call("user.get", {
+					id: user_id
+				});
+				return user.password;
+			} catch (error) {
+				return Promise.reject(error.message);
+			}
 		}
 	}
 });
@@ -79,13 +90,7 @@ broker.createService({
 /**
  * Se inicia el servicio de usuarios
  */
-broker.start()
-	.then( () => broker.call("user.find"))
-	.then( res => {
-		console.log("De la base de datos obtuve:");
-		console.log( res );
-	})
-	.catch(err => console.error(err));
+broker.start();
 
 /**
  * Se exporta el broker que contiene los servicios del usuario.
