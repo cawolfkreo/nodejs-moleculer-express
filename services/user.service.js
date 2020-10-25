@@ -55,9 +55,9 @@ broker.createService({
 });
 
 /**
- * Se crea el microservicio para manipular los
+ * Se crean los microservicios para manipular los
  * datos del usuario y para manipular el wrapper
- * de la base de datos.
+ * respectivo de la base de datos.
  */
 broker.createService({
 	name: "usuario",
@@ -96,11 +96,7 @@ broker.createService({
 });
 
 /**
- * Se inicia el servicio de usuarios
- */
-broker.start();
-
-/**
- * Se exporta el broker que contiene los servicios del usuario.
+ * Se exporta el broker que contiene el cliente
+ * de los servicios relacionados con los usuarios
  */
 module.exports = broker;

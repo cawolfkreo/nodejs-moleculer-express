@@ -136,7 +136,7 @@ app.post("/transaction", async (req, res) => {
 			const resultado = await transacBroker.call("transaccion.add", newTransact);
 			res.send(resultado);
 		} catch (error) {
-			res.status(400).send("Invalid user_id");
+			res.status(400).send("user_id inválido!");
 			console.error(error);
 			console.error(error.message);
 		}
@@ -173,12 +173,18 @@ app.get("/transactions", async (req, res) => {
 });
 
 /**
-* Se escucha en el puerto seleccionado
-*/
-app.listen(port, () => {
-	const currentDate = new Date();
-	const localDate = currentDate.toLocaleString().slice(0,19);
-	console.log(`[${localDate}] Express JS corriendo en el puerto ${port}`);
+ * Se inician los microservicios de transacciones y del usuario
+ */
+Promise.all([userBroker.start(), transacBroker.start()]).then(() =>{
+	/**
+	 * Se activa express una vez que los microservicios están 
+	 * activos para que incie a escuchar en el puerto seleccionado.
+	 */
+	app.listen(port, () => {
+		const currentDate = new Date();
+		const localDate = currentDate.toLocaleString().slice(0,19);
+		console.log(`[${localDate}] Express JS corriendo en el puerto ${port}`);
+	});
 });
 
 /**
@@ -187,6 +193,7 @@ app.listen(port, () => {
 * @param {string} email El correo al cual se le aplica el hash de md5 
 */
 function hashEmail(email) {
+
 	return crypto.createHash("md5")
 		.update(email)
 		.digest("base64");
@@ -198,6 +205,7 @@ function hashEmail(email) {
 * @param {{[keys]: string}} usuario El nuevo usuario a validar
 */
 function validateNewUser(usuario) {
+
 	return (!usuario || !usuario.email || 
 		!usuario.password || !usuario.name || 
 		!usuario.lastname || !usuario.birth_date);
@@ -209,6 +217,7 @@ function validateNewUser(usuario) {
  * @param {*} transaction La nueva transacción a validar
  */
 function validateNewTransaction(transaction) {
+
 	return (!transaction || !transaction.value ||
 		!transaction.points ||!transaction.user_id);
 }

@@ -57,7 +57,9 @@ broker.createService({
 });
 
 /**
- * 
+ * Se crean los microservicios para manipular los
+ * datos del usuario y para manipular el wrapper
+ * respectivo de la base de datos.
  */
 broker.createService({
 	name: "transaccion",
@@ -79,6 +81,12 @@ broker.createService({
 				return Promise.reject(error);
 			}
 		},
+		/**
+		 * Lista todas las transacciones de un usuario en 
+		 * orden descendente. Arroja un error si el user_id
+		 * no existe en el sistema o no es válido.
+		 * @param {Moleculer.Context} ctx El contexto del que se llama el servicio
+		 */
 		async list(ctx) {
 			try {
 				const transactions = await ctx.call("transaction.find", { 
@@ -98,6 +106,9 @@ broker.createService({
 	}
 });
 
-broker.start();
-
+/**
+ * Se exporta el broker que contiene el cliente
+ * de los servicios relacionados con las 
+ * transacciones
+ */
 module.exports = broker;
