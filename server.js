@@ -108,6 +108,8 @@ app.post("/login", async (req, res) => {
 			const isValid = await bcrypt.compare(credentials.password, user.password);
 			
 			if (isValid){
+				// Tiempo en que expira el token a crear
+				credentials.expiresIn = "35m";
 				const token = await firmarJWT(credentials);
 				message = { mensaje: "inicio de sesión exitoso!", user_id: user.user_id, token };
 			} 
