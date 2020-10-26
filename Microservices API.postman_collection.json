@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "8d5a8918-73e6-4c30-b298-61b327ee5a45",
 		"name": "Microservices API",
-		"description": "Para la prueba técnica de leal",
+		"description": "Prueba técnica de Backend para puntos leal",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -245,9 +245,9 @@
 	],
 	"variable": [
 		{
-			"id": "a46008a6-7047-4737-bd52-f72d5453612f",
+			"id": "8cc0cfa8-3d45-410a-bf0e-5cf352a499a4",
 			"key": "token",
-			"value": ""
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZW1haWwuY29tIiwicGFzc3dvcmQiOiJwYXNzd29yZCIsImV4cGlyZXNJbiI6IjM1bSIsImlhdCI6MTYwMzY4MzE1MH0.svEAt00GFDTFUzU5pqdh9_AhoeRghjooqeaWCF79fgA"
 		}
 	],
 	"protocolProfileBehavior": {}
