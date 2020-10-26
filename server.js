@@ -198,6 +198,10 @@ app.get("/points", async (req, res) => {
 	}
 });
 
+/**
+ * Inactiva la transacción que se pasa por 
+ * parámetro del API
+ */
 app.put("/inactivate_transaction", async (req, res) => {
 	if(!req.body || !req.body.transaction_id){
 		res.status(400).send("Parámetros insuficientes");
@@ -220,6 +224,12 @@ app.put("/inactivate_transaction", async (req, res) => {
 	}
 });
 
+/**
+ * Obtiene las transacciones del usuario que
+ * se pasa por el REST y genera un archivo .xlsx
+ * con el cual reporta todas las transacciones 
+ * del usuario
+ */
 app.get("/transactions-to-excel", async (req, res) => {
 	if(!req.body || !req.body.user_id){
 		res.status(400).send("Parámetros insuficientes");
