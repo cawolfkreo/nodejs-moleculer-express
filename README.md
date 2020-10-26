@@ -7,12 +7,12 @@ Todos los comando mencionados en este README asumen que el proyecto ya fue clona
 ## ¿Cómo ejecutarlo?
 Para iniciar es importante primero crear un archivo `.env` o en su defecto tener las siguientes variables de entorno cargadas en el sistema:
 ```shell
-DB_USER= //El usuario de Mysql
-DB_PASS= //La contraseña de dicho usuario
-DB_HOST= //La url o ip para la conexión
-DB_SCHEMA= //El nombre de la db a la que se debe conectar 
-PORT= //El puerto en el que se espera que corra el API rest, por defecto es 8000
-JWT_SECRET= //El secreto para JWT
+DB_USER= #El usuario de Mysql
+DB_PASS= #La contraseña de dicho usuario
+DB_HOST= #La url o ip para la conexión
+DB_SCHEMA= #El nombre de la db a la que se debe conectar 
+PORT= #El puerto en el que se espera que corra el API rest, por defecto es 8000
+JWT_SECRET= #El secreto para JWT
 ```
 Con estas variables el programa puede correr y empezar a escuchar peticiones en el API. Sino se ha creado la base de datos específica, entonces se puede crear mediante el archivo `estructura.sql` que se encuentra en este repositorio. Es importante que se utilice este archivo en una base de datos **MySQL**.
 
