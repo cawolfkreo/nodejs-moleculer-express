@@ -6,6 +6,7 @@
 */
 require("dotenv").config();
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 
@@ -20,6 +21,15 @@ const transacBroker = require("./services/transaction.service");
 * de la sal que bycript utilizará
 */
 const saltRounds = 15;
+
+/**
+ * Variable de secreto para JWT.
+ * Es importante NO utilizar el valor
+ * por defecto e incluir la variable de
+ * entorno JWT_SECRET con un valor 
+ * seguro.
+ */
+const JWT_SECRET = process.env.JWT_SECRET || "bad secret";
 
 /**
 * Si la variable de entorno PORT
@@ -98,7 +108,8 @@ app.post("/login", async (req, res) => {
 			const isValid = await bcrypt.compare(credentials.password, user.password);
 			
 			if (isValid){
-				message = { mensaje: "inicio de sesión exitoso!", user_id: user.user_id };
+				const token = await firmarJWT(credentials);
+				message = { mensaje: "inicio de sesión exitoso!", user_id: user.user_id, token };
 			} 
 			else {
 				status = 401;
@@ -120,7 +131,7 @@ app.post("/login", async (req, res) => {
  * El endpoint debe ser llamado los parámetros
  * válidos.
  */
-app.post("/transaction", async (req, res) => {
+app.post("/transaction", verificaJWT, async (req, res) => {
 	const newTransact = req.body;
 
 	if(validateNewTransaction(newTransact)) {
@@ -149,7 +160,7 @@ app.post("/transaction", async (req, res) => {
  * un usuario. El endpoint debe ser 
  * llamado con el user_id de un usuario válido.
  */
-app.get("/transactions", async (req, res) => {
+app.get("/transactions", verificaJWT ,async (req, res) => {
 	const { user_id } = req.body;
 	if(!user_id){
 		res.status(400).send("Parámetros insuficientes");
@@ -177,7 +188,7 @@ app.get("/transactions", async (req, res) => {
  * activos de un usuario. El endpoint debe ser 
  * llamado con el user_id de un usuario válido.
  */
-app.get("/points", async (req, res) => {
+app.get("/points", verificaJWT, async (req, res) => {
 	const { user_id } = req.body;
 	if(!user_id){
 		res.status(400).send("Parámetros insuficientes");
@@ -202,7 +213,7 @@ app.get("/points", async (req, res) => {
  * Inactiva la transacción que se pasa por 
  * parámetro del API
  */
-app.put("/inactivate_transaction", async (req, res) => {
+app.put("/inactivate_transaction", verificaJWT, async (req, res) => {
 	if(!req.body || !req.body.transaction_id){
 		res.status(400).send("Parámetros insuficientes");
 	}
@@ -230,7 +241,7 @@ app.put("/inactivate_transaction", async (req, res) => {
  * con el cual reporta todas las transacciones 
  * del usuario
  */
-app.get("/transactions-to-excel", async (req, res) => {
+app.get("/transactions-to-excel", verificaJWT, async (req, res) => {
 	if(!req.body || !req.body.user_id){
 		res.status(400).send("Parámetros insuficientes");
 	}
@@ -298,4 +309,56 @@ function validateNewTransaction(transaction) {
 
 	return (!transaction || !transaction.value ||
 		!transaction.points ||!transaction.user_id);
+}
+
+/**
+ * Genera un token JWT firmado con
+ * los datos a firmar y la variable
+ * JWT_secret. Este método retorna
+ * una promesa por lo que se puede
+ * usar con .then() o async/await. 
+ * @param {any} datosAFirmar un objeto que se va a firmar con el JWT
+ */
+function firmarJWT(datosAFirmar) {
+
+	//Debido a que se está convirtiendo en promesa
+	//a una función que solo utiliza un callback
+	return new Promise((resolve, rejects) => {
+		//se crea esta "pirámide" de callbacks
+		jwt.sign(datosAFirmar, JWT_SECRET, (err, token) => {
+			if(err){
+				rejects(err);
+			}
+			else {
+				resolve(token);
+			}
+		});
+	});
+}
+
+/**
+ * Función encargada de revisar que
+ * una petición contenga el token
+ * JWT en sus encabezados.
+ * @param {Express.Request} req la petición del cliente
+ * @param {Express.Response} res la respuesta a enviar al cliente
+ * @param {Express.next} next función para decirle a express que ejecute el siguiente método.
+ */
+function verificaJWT (req, res, next) {
+	const { authorization } = req.headers;
+
+	if(typeof authorization !== "undefined"){
+		const token = authorization.split(" ")[1];
+		jwt.verify(token, JWT_SECRET, (err) => {
+			if( err ) {
+				res.sendStatus(403);
+			}
+			else {
+				next();
+			}
+		});
+	}
+	else {
+		res.sendStatus(403);
+	}
 }

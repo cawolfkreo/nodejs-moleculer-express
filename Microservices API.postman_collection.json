@@ -9,6 +9,9 @@
 		{
 			"name": "localhost:8080/user - new user",
 			"request": {
+				"auth": {
+					"type": "noauth"
+				},
 				"method": "POST",
 				"header": [],
 				"body": {
@@ -36,6 +39,9 @@
 		{
 			"name": "localhost:8080/login - login",
 			"request": {
+				"auth": {
+					"type": "noauth"
+				},
 				"method": "POST",
 				"header": [],
 				"body": {
@@ -203,6 +209,45 @@
 				}
 			},
 			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "b12e72aa-fd74-4129-8e33-5f3e8dac05d2",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "d40419be-857d-4113-a2a5-19dce63d221e",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "a46008a6-7047-4737-bd52-f72d5453612f",
+			"key": "token",
+			"value": ""
 		}
 	],
 	"protocolProfileBehavior": {}
