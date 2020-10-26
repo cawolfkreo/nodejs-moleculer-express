@@ -21,7 +21,7 @@ const { DB_HOST, DB_USER, DB_PASS, DB_SCHEMA } = process.env;
 * servicios relacionados con los
 * usuarios.
 */
-const broker = new ServiceBroker();
+const broker = new ServiceBroker({ logger: false });
 
 
 /**
@@ -33,7 +33,8 @@ broker.createService({
 	mixins: [DbService],
 	adapter: new sqlAdapter( DB_SCHEMA, DB_USER, DB_PASS, { 
 		host: DB_HOST,
-		dialect: "mysql"
+		dialect: "mysql",
+		logging: false
 	}),
 	model: {
 		name: "transaction",
