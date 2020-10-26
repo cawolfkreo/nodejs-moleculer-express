@@ -1,3 +1,5 @@
+CREATE DATABASE  IF NOT EXISTS `user_points` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `user_points`;
 -- MySQL dump 10.13  Distrib 8.0.22, for Win64 (x86_64)
 --
 -- Host: localhost    Database: user_points
@@ -23,7 +25,7 @@ DROP TABLE IF EXISTS `transaction`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `transaction` (
-  `transaction_id` int NOT NULL,
+  `transaction_id` int NOT NULL AUTO_INCREMENT,
   `created_date` datetime NOT NULL,
   `value` decimal(19,12) NOT NULL,
   `points` int NOT NULL,
@@ -63,4 +65,4 @@ CREATE TABLE `user` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-10-25 11:27:57
+-- Dump completed on 2020-10-25 22:57:54
